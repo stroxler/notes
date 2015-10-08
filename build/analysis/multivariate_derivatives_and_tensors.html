@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="/Users/apple/notes/include/solarized-light.css" type="text/css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<p><span class="math">\(\def\R{\mathbb{R}}\)</span> <!--- end of header material --></p>
+<h1 id="a-notation-and-basic-discussion-of-tensors">A notation and basic discussion of tensors</h1>
+<h2 id="introduction">Introduction</h2>
+<p>In elementary discussions of multidimensional differentiation, typically we assume that functions <span class="math">\(f\)</span> map a space of column vectors, say <span class="math">\(\R^n\)</span>, to another such space, say <span class="math">\(\R^m.\)</span> In this case, the derivative of <span class="math">\(f\)</span> at a point <span class="math">\(x\)</span> is a linear map <span class="math">\[
+Df(x) : \R^n \to \R^m
+\]</span> which is the linear of the best affine approximation to <span class="math">\(f\)</span> near <span class="math">\(x.\)</span> This map can be represented as a matrix. The components of <span class="math">\(f\)</span> can be treated individually here, the <span class="math">\(i\)</span>th row of the matrix <span class="math">\(Df(x)\)</span> is the transpose of the gradient of <span class="math">\(f_i.\)</span></p>
+<p>This representation of the derivative works well for first derivatives of vector-valued vector functions. It can be generalized to functions with matrices as inputs or outputs by simply flattening the matrices, but this can cause us to lose a lot of the problem structure. This issue arises not only when dealing with inherently matrix-valued functions, but also when handling higher-order derivatives, since the second derivative of a function <span class="math">\(f : \R^n \to \R^m\)</span> is, as the derivative of a derivative, already a derivative of a matrix.</p>
+<p>Often this is handled in an ad-hoc fashion, where the notational conventions aren''t always clear. The <a href="http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3274">matrix cookbook</a>, for example, provides many formulas that retain the structure of the problem at the expense of following conventions that are not always obviously mapped back to the elementary definition of <span class="math">\(Df(x)\)</span> as a linear map from <span class="math">\(\R^n\)</span> to <span class="math">\(\R^m\)</span>.</p>
+<p>One standard way of handling this problem is via Kroneker-product style representations of tensors, which--for those familiar with the conventions--provides a notational convention for mapping linear operators on arrays to large 2-d matrices that operate on the flattened form of those arrays. Some formulas in the Matrix Cookbook, though not all, follow this convention.</p>
+<p>However, for those not familiar with the notation this flattened approach to tensors can be more confusing than enlightening, and it also hides the fact that when implementing algorithms using a package such as <code>numpy</code>, we would generally encode high-dimensional operators not as large 2d matrices but as higher-dimensional arrays.</p>
+<p>Our goal here is to provide a set of notational conventions, and some examples, to help those not comfortable with tensors use higher-dimensional generaizations of matrices.</p>
+<h2 id="our-tensor-notation">Our Tensor Notation</h2>
+<p>For most purposes it suffices to restrict attention to tensors of no more than four dimensions; in order to work with higher-dimensional tensors we would need to develop intuition rather than notation, much as one develops intuition rather than graphing methods to understand the geometry of <span class="math">\(\R^n\)</span> for <span class="math">\(n\)</span> greater than 3.</p>
+<p>For a one- and two-dimensional tensors <span class="math">\(v \in \R^n\)</span> and <span class="math">\(M \in \R^{m \times n}\)</span> we will use the usual column-vector and rectangular matrix notations, with the usual convention that for matrix-vector operations and when transposing vectors, <span class="math">\(\R^n\)</span> is considered equivalent to <span class="math">\(\R^{n \times 1}\)</span>. <span class="math">\[
+v = (v_i) = \begin{pmatrix}
+    v_1 \\ v_2 \\ \vdots \\ v_n
+    \end{pmatrix}, \qquad
+M = (M_{ij}) = \begin{pmatrix}
+    M_{11} &amp; \dots &amp; M_{1n} \\
+    \vdots &amp; \dots &amp; \vdots \\
+    M_{m1} &amp; \dots &amp; M_{mn}
+    \end{pmatrix}.
+\]</span></p>
+<p>For three-dimensional tensors, we will visualize them as column vectors of matrices. So for <span class="math">\(A \in \R^{a \times b \times c}\)</span> we can express A as <span class="math">\[
+A = (A_{ijk}) = \begin{pmatrix}
+        \begin{pmatrix}
+            A_{111} &amp; \dots &amp; A_{11c} \\
+            \vdots &amp; \dots &amp; \vdots \\
+            A_{1b1} &amp; \dots &amp; A_{1bc}
+        \end{pmatrix} \\
+        \vdots \\
+        \begin{pmatrix}
+            A_{a11} &amp; \dots &amp; A_{a1c} \\
+            \vdots &amp; \dots &amp; \vdots \\
+            A_{ab1} &amp; \dots &amp; A_{abc}
+        \end{pmatrix} \\
+    \end{pmatrix}.
+\]</span> Note that here, the axis we represent as a column of matrices is the first axis. The second two axes, given any value of the first axis, are represented as a matrix in the usual way.</p>
+<p>And analogously, a four-dimensional tensor <span class="math">\(B\)</span> can be represented as a matrix of matrices <span class="math">\[
+% (matrixname, i_1, i_2, n_3, n_4)
+% (        #1,  #2,  #3,  #4,  #5)
+\newcommand{\troxsubtensor}[5]{
+    \begin{pmatrix}
+        {#1}_{{#2}{#3}11}    &amp; \dots &amp; {#1}_{{#2}{#3}1{#5}} \\
+        \vdots               &amp; \dots &amp; \vdots \\
+        {#1}_{{#2}{#3}{#4}1} &amp; \dots &amp; {#1}_{{#2}{#3}{#4}{#5}}
+    \end{pmatrix}
+}
+B = (B_{ijkl}) = \begin{pmatrix}
+    \troxsubtensor{B}{1}{1}{c}{d} &amp; \dots &amp; \troxsubtensor{B}{1}{b}{c}{d}  \\
+    \vdots                        &amp; \dots &amp; \vdots \\
+    \troxsubtensor{B}{a}{1}{c}{d} &amp; \dots &amp; \troxsubtensor{B}{a}{b}{c}{d} 
+\end{pmatrix}
+\]</span></p>
+<p>Higher dimensional tensors could be represented in an analogous way, where for every two dimensions we add, we create a new layer in the nexted matrix representing our tensor. Writing this out explicitly would be very cumbersome, but thinking of this notation in the abstract can be useful.</p>
+<h2 id="tensor-operations">Tensor operations</h2>
+<h3 id="left-multiplication-with-a-vector">Left multiplication with a vector</h3>
+<p>Analogous to how we usually learn matrix operations, let us begin by defining the product of a tensor with a vector. For clarity and without loss of generality let us make <span class="math">\(T\)</span> 3-dimensional.</p>
+<p>Suppose <span class="math">\(T \in \R^{n\times m \times p}\)</span> and <span class="math">\(v \in \R^{p}.\)</span> We can, then, treat <span class="math">\(T\)</span> as a column vector <span class="math">\[
+T = \begin{pmatrix}
+    T_{1..} \\ T_{2..} \\ \vdots \\ T_{n..}
+    \end{pmatrix}
+\]</span> of <span class="math">\(m \times p\)</span> matrices. It then makes sense to define the three-dimensional product <span class="math">\(Tv \in \R^{n \times m \times 1}\)</span> to be the column vector <span class="math">\[
+Tv = \begin{pmatrix}
+    T_{1..}v \\ T_{2..}v \\ \vdots \\ T_{n..}v
+    \end{pmatrix}.
+\]</span></p>
+<p>Note that since we identify <span class="math">\(\R^p\)</span> with <span class="math">\(\R^{p \times 1}\)</span> as in matrix-vector multiplication, this means tensor multiplication behaves similarly to matrix multiplication in the sense that the 'inner' dimension <span class="math">\(p\)</span> drops out.</p>
+<h3 id="left-multiplication-with-a-tensor">Left multiplication with a tensor</h3>
+<p>Using the same convention of the left-most dimension dropping out, we can define multiplication for two tensors <span class="math">\(A \in \R^{a \times b \dots \times c}\)</span> and <span class="math">\(B \in \R^{c \times d \dots \times e}\)</span> to be the tensor in <span class="math">\(\R^{a \times b \dots \times d \dots \times e}\)</span> created by taking all of the 1d vectors in <span class="math">\(A\)</span> where we treat the last axis as the vector axis, and dotting them with all the 1d vectors in <span class="math">\(B\)</span> where we treat the first axis as the vector axis.</p>
+<p>So, for example, if <span class="math">\(A \in \R^{5 \times 6 \times 7}\)</span> and <span class="math">\(B \in \R^{7 \times 3}\)</span> then we can define <span class="math">\[
+(AB)_{ijk} = \sum_{l=1}^{7} A_{ijl} B_{lk}.
+\]</span></p>
+<p>This behavior is exactly what the <code>numpy.dot</code> function does for <code>ndarray</code>s. But for clarity, let us implement our own version of <code>dot</code>:</p>
+<table class="sourceCode python numberLines" id="pythoncode"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="sourceCode"><pre><code class="sourceCode python"><span class="ch">import</span> numpy <span class="ch">as</span> np
+
+<span class="kw">def</span> tensor_multiply(array0, array1):
+    <span class="co">&quot;&quot;&quot;</span>
+<span class="co">    Basic tensor multiplier for ndarrays. Equivalent to np.dot().</span>
+
+<span class="co">    Implemented by appending axes to array0 (numpy auto-prepends them to</span>
+<span class="co">    array1).</span>
+<span class="co">    </span>
+<span class="co">    &quot;&quot;&quot;</span>
+    sum_axis = array0.ndim - <span class="dv">1</span>
+    <span class="kw">for</span> j in <span class="dt">range</span>(array1.ndim - <span class="dv">1</span>):
+        array0 = array0[..., np.newaxis]
+    <span class="kw">return</span> (array0 * array1).<span class="dt">sum</span>(axis=sum_axis)</code></pre></td></tr></table>
+<h3 id="altered-order-of-multiplication">Altered order of multiplication</h3>
+<p>We have now generalized the multiplication of matrices to tensors. But for many applications, we need a more general operation than taking the product <span class="math">\(AB\)</span> by summing along the last axis of <span class="math">\(A\)</span> and the first of <span class="math">\(B.\)</span></p>
+<p>For example, consider matrix-valued functions of vectors <span class="math">\[
+f: \R^m \to \R^{n_1 \times n_2}, \quad g: \R^m \to \R^{n_2 \times n_3}.
+\]</span> The derivatives of <span class="math">\(f\)</span> and <span class="math">\(g\)</span> are tensors in <span class="math">\(\R^{n_1 \times n_2 \times m}\)</span> and <span class="math">\(\R^{n_2 \times n_3 \times m}.\)</span></p>
+<p>Now consider <span class="math">\(h = f\cdot g,\)</span> where <span class="math">\(\cdot\)</span> indicates ordinary matrix multiplication. We might hope that the 1d product rule <span class="math">\(Dh = Df g + f Dg\)</span> holds in some generalized sense, and indeed we can see that it must: <span class="math">\[
+(f \cdot g)_{ij} \doteq \sum_k f_{ik} g_{kj},
+\]</span> hence by the 1d product rule, <span class="math">\[
+\partial_{x_l} (f \cdot g)_{ij} = \sum_k
+    \left(\partial_{x_l} f_{ik} g_{kg} + f_{ik} \partial_{x_l} g_{kj} \right),
+\]</span> but unfortunately this is not the product of the tensors <span class="math">\(Df\)</span> and <span class="math">\(Dg\)</span> that we have just described: the last axis of <span class="math">\(Df\)</span> is of length <span class="math">\(m\)</span>, corresponding to the rows of</p>
+<p>Usually you can work out these issues by carefully tracking the axes and their meanings in a problem. But for the sake of being able to write down a clear definition of the product rule, define an operator <span class="math">\(\cdot_{k, l}\)</span> such that <span class="math">\(A \cdot_{k, l}\)</span> corresponds to - swaping axes on <span class="math">\(A\)</span> so that the <span class="math">\(k\)</span>th axis goes last - swapping axes on <span class="math">\(B\)</span> so that the <span class="math">\(l\)</span>th axis goes first - computing the product in the ordinary sense.</p>
+<p>In the context of the product rule, it is useful to allow negative indices for counting backward (so as in <code>numpy</code>, -1 indicates the last axis), and also to follow the convention that <span class="math">\(\cdot_{k} \doteq \cdot_{k, 1},\)</span> since generally only the left tensor is 'out of order' when we compute these products.</p>
+<p>With these conventions, we can see a full version of the product rule for higher-dimensional derivatives with vector inputs: - let <span class="math">\(f\)</span> have domain <span class="math">\(\R^{n}\)</span> and range <span class="math">\(\R^{T_f}\)</span>, where <span class="math">\(\R^{T_f}\)</span> is - shorthand for any tensor space. - let <span class="math">\(g\)</span> have domain <span class="math">\(\R^{n}\)</span> and range <span class="math">\(\R^{T_g}\)</span>, where <span class="math">\(\R^{T_g}\)</span> is shorthand for any tensor space such that products of elements in <span class="math">\(\R^{T_f}\)</span> and <span class="math">\(\R^{T_g}\)</span> are well-defined.</p>
+<p>Then the derivative of the tensor product function <span class="math">\(f \cdot g\)</span> is given by <span class="math">\[
+D(f \cdot g) = Df \cdot_{-2} g + f \cdot Dg.
+\]</span></p>
+<p>Returning to our original example, <span class="math">\(f \cdot g\)</span> has range <span class="math">\(\R^{n_1 \times n_3},\)</span> and indeed the product rule shows us that the derivative <span class="math">\(D(f \cdot g)\)</span> has range <span class="math">\(\R^{n_1 \times n_3 \times m},\)</span> as we would expect.</p>
+<h3 id="higher-order-multiplication">Higher-order multiplication</h3>
+<p>Consider multiplying two matrices <span class="math">\(A\)</span> and <span class="math">\(B.\)</span> The usual matrix multiplication sums along the last axis of <span class="math">\(A\)</span> and first axis of <span class="math">\(B\)</span>, which <em>must</em> have the same length.</p>
+<p>But, there are at least two more simple types of matrix multiplication. If the two matrices have the same shape, we can multiply them pointwise. This is easily expressed in terms of tensors, although for most purposes it is better to consider pointwise operations distinct from tensors: if we identify <span class="math">\(A \in \R^{n \times m}\)</span> with <span class="math">\(\R^{n \times m \times 1}\)</span> and <span class="math">\(B \in \R^{n \times m}\)</span> with <span class="math">\(\R^{1 \times n \times m}\)</span>, then the pointwise product <span class="math">\(A\cdot_0B\)</span> is equivalent to a tensor product.</p>
+<p>More interesting is the matrix dot product: for two <span class="math">\(n\times m\)</span> matrices <span class="math">\(A\)</span> and <span class="math">\(B\)</span>, both <span class="math">\(\text{trace}(A^T B) = \text{trace}(B^T A) = \text{sum}(A \cdot_0 B)\)</span> are all representations of the dot procut <span class="math">\(\text{vec}(A) \cdot \text{vec}(B),\)</span> which is just the Euclidean inner product where we view <span class="math">\(A\)</span> and <span class="math">\(B\)</span> as vectors in <span class="math">\(\R^{nm}.\)</span></p>
+<p>This operation can be generalized to tensors. Suppose that the last <span class="math">\(k\)</span> dimensions of <span class="math">\(A\)</span> agree with the first <span class="math">\(k\)</span> dimensions of <span class="math">\(B.\)</span> Then we can define <span class="math">\(A\cdot_{:k} B\)</span> to be the tensor obtained by flattening these dimensions and then taking the ordinary tensor product. Note that our previous definition of <span class="math">\(AB\)</span> agrees with <span class="math">\(A\cdot_1 B,\)</span> and that if <span class="math">\(A\)</span> and <span class="math">\(B\)</span> both have dimension <span class="math">\(k\)</span> then <span class="math">\(A \cdot_{:k} B = \text{sum}(A \cdot_0 B)\)</span>.</p>
+<h4 id="example-the-chain-rule-with-matrices">Example: the chain rule with matrices</h4>
+<p>For a simple example, consider what happens if we compose a real-valued matrix-input function $f: ^{m n} <span class="math">\(\R\)</span> with a matrix-valued real-input function <span class="math">\(g: \R \to \R^{m \times n}.\)</span> The derivative of <span class="math">\(f\)</span> is a tensor in <span class="math">\(\R^{1 \times n\times m},\)</span> whereas the derivative of <span class="math">\(g\)</span> is a tensor in <span class="math">\(\R^{n\times m \times 1}\)</span> (both of which we could identify with an <span class="math">\(n \times m\)</span> matrix as the <a href="http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3274">matrix cookbook</a> does, but let us leave them as tensors to see what happens).</p>
+<p>Now, consider the chain rule. If <span class="math">\(h = f \circ g,\)</span> then we know from the usual chain rule applied to flattened versions of <span class="math">\(f\)</span> and <span class="math">\(g\)</span> that <span class="math">\[
+Dh(x) = \sum_{i, j} \partial_{i, j}f(g(x)) \times (D g(x))_{ij}.
+\]</span></p>
+<p>This cannot be expressed in terms of typical tensors without flattening the input, which in turn can obscure problem structure (for example, if <span class="math">\(f(M) = \text{det}(M),\)</span> then treating <span class="math">\(M\)</span> as a vector in <span class="math">\(\R^{nm}\)</span> would be decidedly unhelpful!).</p>
+<p>But, we can read directly from the formula that <span class="math">\[
+Dh = Df \cdot_{:2} Dg.
+\]</span></p>
+<p>Note that this agrees with the special solution in the <a href="http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=3274">matrix cookbook</a>, which is that <span class="math">\(D f \circ g = \text{trace}(Df^T Dg),\)</span> where we treat the derivatives as ordinary <span class="math">\(n \times m\)</span> matrices.</p>
+<h3 id="more-multiplications">More multiplications</h3>
+<p>We saw in the section on [altering the order of multiplication][### Altered order of multiplication] that we don not always want to multiply tensors <span class="math">\(A\)</span> and <span class="math">\(B\)</span> along the last axis of <span class="math">\(A\)</span> and first of <span class="math">\(B.\)</span> This also true of higher-order multiplications.</p>
+<p>In general, there could arise situations where we want to multiply along the flattened versions of an arbitrary set of axes, in which case we might define an operator, e.g., <span class="math">\(\cdot_{(3,5),(4,2)}\)</span> to indicate that we want to flatten the 3rd and 5th axes of the left side with the 4th and 2nd on the right.</p>
+<p>Most cases, however, do not require so much generality. Armed with an understanding of the cases discussed thus far, the reader ought to be able to address the proper matching of axes as needed in applications.</p>
+<h2 id="operations-in-terms-of-matrices">Operations in terms of matrices</h2>
+<p>At a theoretical level, we have not introduced anything here which was not already available via before-and-after reshapes. The <span class="math">\(k\)</span>th order product of two tensors <span class="math">\(A \cdot_{:k} B\)</span> is equivalent to</p>
+<ul>
+<li>Forming a matrix <span class="math">\(M_L(A)\)</span> which flattens all but the first <span class="math">\(k\)</span> dimensions into the first axis, and the last <span class="math">\(k\)</span> dimensions into the second.</li>
+<li>Forming a matrix <span class="math">\(M_R(B) = (M_L(B^T))^T\)</span> by flattening the first <span class="math">\(k\)</span> dimensions to the first axis and the rest to the second.</li>
+<li>Taking the ordinary matrix product <span class="math">\(\tilde C \doteq M_L(A) M_R(B),\)</span> and</li>
+<li>Reshaping <span class="math">\(\tilde C\)</span> into a higher dimensional tensor <span class="math">\(C\)</span> by undoing the flattening operations.</li>
+</ul>
+<p>We can encapsulate this idea in numpy code as follows:</p>
+<table class="sourceCode python numberLines" id="pythoncode"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="sourceCode"><pre><code class="sourceCode python"><span class="ch">import</span> numpy <span class="ch">as</span> np
+
+<span class="kw">def</span> dot_k(array0, array1, k):
+    <span class="co">&quot;&quot;&quot;</span>
+<span class="co">    Basic tensor multiplier for ndarrays. Equivalent to np.dot().</span>
+
+<span class="co">    Implemented by appending axes to array0 (numpy auto-prepends them to</span>
+<span class="co">    array1).</span>
+<span class="co">    </span>
+<span class="co">    &quot;&quot;&quot;</span>
+    <span class="kw">if</span> k == <span class="dv">0</span>:
+        <span class="kw">return</span> array0 * array1
+    <span class="kw">else</span>:
+        shape_out = <span class="dt">list</span>(array0.shape[:-k]) + <span class="dt">list</span>(array1.shape[k:])
+        axis_size = np.product(array0.shape[-k:])
+        matrix_out = np.dot(array0.reshape(-<span class="dv">1</span>, axis_size),
+                            array1.reshape(axis_size, -<span class="dv">1</span>))
+        <span class="kw">return</span> matrix_out.reshape(shape_out)</code></pre></td></tr></table>
+<p>Of course, the fact that tensor operations provide nothing new on purely theoretical grounds does not diminish their usefulness. As a way to preserve the structure of a problem, both in mathematical writing and in codebases where the natural data structure is a multidimensional array rather than a 2d matrix, they can be quite valuable.</p>
+<h2 id="section"></h2>
+<p>Applications</p>
+<p>ADD LINK: derivatives, the derivative product and chain rule.</p>
+</body>
+</html>
