@@ -2,6 +2,7 @@
 import os
 import subprocess
 import argparse
+import shutil
 
 parser = argparse.ArgumentParser(
     description=('Mirror src/ directory tree (in markdown) in build/')
@@ -10,7 +11,6 @@ parser = argparse.ArgumentParser(
 
 MATHJAX = ('http://cdn.mathjax.org/mathjax/latest/MathJax.js?'
            'config=TeX-AMS-MML_HTMLorMML')
-INCLUDE = os.path.join(os.path.split(os.path.realpath(__file__))[0], 'include')
 
 
 def build_subdir(arg, dirname, filenames):
@@ -29,7 +29,7 @@ def make_pandoc(infile, outfile):
         '-s',
         '-o', outfile,
         '--mathjax=%s' % MATHJAX,
-        '--css=%s' % os.path.join(INCLUDE, 'solarized-light.css'),
+        '--css=%s' % '/include/solarized-light.css',
         # the syntax highlighting seems to work without setting this, although
         # the numbered blocks are kind of weird (the solarized css is, I think,
         # interfering with pandoc). But it's all usable for now.
@@ -38,3 +38,4 @@ def make_pandoc(infile, outfile):
     ])
 
 os.path.walk('src', build_subdir, None)
+shutil.copytree('include', 'build/include')
